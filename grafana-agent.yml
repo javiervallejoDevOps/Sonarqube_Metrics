@@ -1,0 +1,114 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana-agent
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: grafana-agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - pods
+      - services
+      - endpoints
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: grafana-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: grafana-agent
+subjects:
+  - kind: ServiceAccount
+    name: grafana-agent
+    namespace: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-agent-config
+  namespace: monitoring
+data:
+  agent.yaml: |
+    server:
+      log_level: info
+
+    metrics:
+      wal_directory: /tmp/grafana-agent-wal
+      global:
+        scrape_interval: 15s 
+        external_labels:
+          cluster: sonarqube
+
+      configs:
+        - name: sonarqube
+          scrape_configs:
+            - job_name: sonarqube-native
+              metrics_path: /api/monitoring/metrics
+              params:
+                passcode: ["M0n1t0r1ngC..l"]
+              kubernetes_sd_configs:
+                - role: pod
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_label_app]
+                  action: keep
+                  regex: sonarqube
+                - source_labels: [__meta_kubernetes_pod_container_port_number]
+                  action: keep
+                  regex: "9000"
+                - source_labels: [__address__]
+                  target_label: __address__
+                  replacement: $1:9000
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: instance
+
+          remote_write:
+            - url: http://mimir-gateway.monitoring.svc:80/api/v1/push
+              headers:
+                X-Scope-OrgID: sonarqube
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-agent
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-agent
+  template:
+    metadata:
+      labels:
+        app: grafana-agent
+    spec:
+      serviceAccountName: grafana-agent
+      containers:
+        - name: grafana-agent
+          image: grafana/agent:v0.40.3
+          args:
+            - "-config.file=/etc/agent/agent.yaml"
+            - "-server.http.address=0.0.0.0:8080"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/agent
+          ports:
+            - containerPort: 8080
+              name: http-metrics
+      volumes:
+        - name: config
+          configMap:
+            name: grafana-agent-config
