@@ -6,7 +6,7 @@ El objetivo principal es demostrar una arquitectura realista de **recolección, 
 
 ---
 
-## 🧱 Arquitectura general
+##  Arquitectura general
 
 El flujo de datos es el siguiente:
 
@@ -23,7 +23,7 @@ Esta arquitectura desacopla completamente la **ingesta**, el **almacenamiento** 
 
 ---
 
-## 📦 Componentes incluidos
+##  Componentes incluidos
 
 ### SonarQube
 
@@ -56,7 +56,7 @@ Esta arquitectura desacopla completamente la **ingesta**, el **almacenamiento** 
 
 ---
 
-## 📁 Estructura del repositorio
+##  Estructura del repositorio
 
 ```
 .
@@ -96,7 +96,7 @@ Esta arquitectura desacopla completamente la **ingesta**, el **almacenamiento** 
 
 ---
 
-## 🚀 Orden de despliegue
+##  Orden de despliegue
 
 Es importante respetar el orden para evitar errores de dependencia:
 
@@ -110,7 +110,7 @@ Este orden garantiza que cada servicio tenga disponibles sus dependencias en el 
 
 ---
 
-## 📊 Métricas disponibles
+##  Métricas disponibles
 
 Algunas de las métricas que pueden visualizarse:
 
@@ -124,7 +124,7 @@ Todas estas métricas son consultables mediante **PromQL** desde Grafana.
 
 ---
 
-## 🎯 Casos de uso
+##  Casos de uso
 
 * Monitorización continua de la calidad del código
 * Detección temprana de degradaciones técnicas
@@ -133,7 +133,7 @@ Todas estas métricas son consultables mediante **PromQL** desde Grafana.
 
 ---
 
-## 🛠 Requisitos
+##  Requisitos
 
 * Docker / Kubernetes (según despliegue)
 * Conocimientos básicos de Prometheus / Grafana
@@ -141,7 +141,7 @@ Todas estas métricas son consultables mediante **PromQL** desde Grafana.
 
 ---
 
-## 📌 Notas finales
+##  Notas finales
 
 Este repositorio está pensado como **proyecto demostrativo**, pero la arquitectura es totalmente extrapolable a entornos productivos.
 
